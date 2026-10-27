@@ -1,0 +1,703 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>성리 | 사라진 무대의 열쇠</title>
+<style>
+*{box-sizing:border-box}
+html,body{
+ margin:0;min-height:100%;
+ background:#10091e;color:white;
+ font-family:"Malgun Gothic",Arial,sans-serif
+}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible{outline:3px solid white}
+header{
+ max-width:480px;margin:auto;
+ display:flex;align-items:center;
+ justify-content:space-between;gap:8px;
+ padding:12px;background:#28143d
+}
+header strong{font-size:14px;color:#ffe1a1}
+.small{font-size:11px;color:#d9c2ed}
+.pill{
+ background:#593480;color:white;
+ border:1px solid #b994ec;
+ border-radius:20px;padding:9px;
+ font-size:12px;white-space:nowrap
+}
+main{
+ max-width:480px;margin:auto;
+ background:#1c102c
+}
+#scene{
+ position:relative;width:100%;
+ aspect-ratio:9/16;
+ overflow:hidden;background:#241332
+}
+#room{
+ width:100%;height:100%;
+ object-fit:fill;display:block
+}
+.hotspot{
+ position:absolute;
+ transform:translate(-50%,-50%);
+ width:10%;min-width:38px;
+ aspect-ratio:1;
+ display:grid;place-items:center;
+ border:2px solid #d5e3ff;
+ border-radius:50%;
+ background:rgba(44,78,176,.66);
+ color:white;font-size:22px;
+ box-shadow:0 0 13px #6486ff;
+ z-index:2
+}
+.hotspot.done{
+ background:#14765c;
+ border-color:#96ffd4;
+ box-shadow:0 0 12px #35ffc0
+}
+#status{
+ padding:13px;background:#2b1741;
+ font-size:13px;line-height:1.6
+}
+#bag{
+ display:flex;gap:7px;
+ flex-wrap:wrap;padding:12px
+}
+.item{
+ background:#352049;
+ border:1px solid #8865aa;
+ border-radius:10px;
+ padding:9px;font-size:12px
+}
+#progress{
+ padding:0 12px 15px;
+ font-size:12px;color:#dcc3f5
+}
+footer{
+ text-align:center;
+ color:#b5a1c9;font-size:11px;
+ padding:14px
+}
+.overlay{
+ position:fixed;inset:0;
+ z-index:10;
+ background:rgba(5,2,16,.9);
+ display:flex;align-items:center;
+ justify-content:center;padding:16px
+}
+.hidden{display:none!important}
+.panel{
+ position:relative;
+ width:min(100%,440px);
+ max-height:90dvh;
+ overflow:auto;
+ padding:22px;
+ border:2px solid #b994ed;
+ border-radius:20px;
+ background:linear-gradient(145deg,#43235e,#21122f);
+ box-shadow:0 0 35px #6736ad55
+}
+h1,h2{color:#ffdc8f}
+h1{font-size:23px;margin-top:0}
+h2{font-size:20px;margin:5px 28px 12px 0}
+p{line-height:1.65}
+.action{
+ display:block;width:100%;
+ padding:14px;margin-top:12px;
+ border:0;border-radius:12px;
+ background:#f0c76d;
+ color:#24132e;font-weight:bold
+}
+.option{
+ display:block;width:100%;
+ padding:14px;margin:9px 0;
+ border:1px solid #a17acb;
+ border-radius:12px;
+ background:#39234f;
+ color:white;text-align:left
+}
+.option:active{background:#76509b}
+.close{
+ position:absolute;top:10px;right:12px;
+ border:0;background:none;
+ color:white;font-size:28px
+}
+#feedback{
+ min-height:25px;
+ color:#ffe19c;font-weight:bold
+}
+#code{
+ display:block;width:100%;
+ padding:14px;
+ border:2px solid #bc91ed;
+ border-radius:12px;
+ background:#160d25;color:white;
+ font-size:28px;
+ letter-spacing:10px;text-align:center
+}
+#intro{z-index:20}
+#endingScreen{
+ z-index:30;
+ background:#080411;
+ padding:8px
+}
+.endingWrap{
+ width:min(100%,440px);
+ max-height:96dvh;
+ display:flex;flex-direction:column;
+ align-items:center
+}
+.endingWrap img{
+ display:block;
+ max-width:100%;
+ max-height:82dvh;
+ object-fit:contain;
+ border-radius:12px;
+ box-shadow:0 0 25px #9d62ec77
+}
+#endingReplay{
+ width:100%;max-width:360px;
+ flex-shrink:0
+}
+#endingFallback{
+ display:none;
+ padding:20px;text-align:center;
+ color:#ffdc8f
+}
+</style>
+</head>
+<body>
+
+<header>
+ <div>
+  <strong>🔐 성리 | 사라진 무대의 열쇠</strong>
+  <div class="small">팬 참여형 모바일 방탈출</div>
+ </div>
+ <button class="pill" id="musicBtn"
+  onclick="toggleMusic()">♫ 음악 OFF</button>
+</header>
+
+<main>
+ <div id="scene">
+  <img id="room" src="room.png"
+   alt="성리의 보라색 대기실">
+
+  <button class="hotspot"
+   data-puzzle="letter"
+   style="left:15%;top:44%"
+   onclick="openPuzzle('letter')"
+   aria-label="화장대 편지 조사">🔎</button>
+
+  <button class="hotspot"
+   data-puzzle="clock"
+   style="left:17%;top:39%"
+   onclick="openPuzzle('clock')"
+   aria-label="시계 조사">🔎</button>
+
+  <button class="hotspot"
+   data-puzzle="score"
+   style="left:60%;top:72%"
+   onclick="openPuzzle('score')"
+   aria-label="악보 조사">🔎</button>
+
+  <button class="hotspot"
+   data-puzzle="costume"
+   style="left:86%;top:35%"
+   onclick="openPuzzle('costume')"
+   aria-label="무대 의상 조사">🔎</button>
+
+  <button class="hotspot"
+   data-puzzle="case"
+   style="left:89%;top:63%"
+   onclick="openPuzzle('case')"
+   aria-label="마이크 보관함 조사">🔎</button>
+
+  <button class="hotspot"
+   data-puzzle="door"
+   style="left:61%;top:27%"
+   onclick="openPuzzle('door')"
+   aria-label="STAGE 출입문">🚪</button>
+ </div>
+
+ <div id="status">
+  공연 시작이 다가옵니다!
+  성리 팬 퀴즈를 풀고 무대 문을 열어주세요.
+ </div>
+
+ <div id="bag">
+  <span class="item">🎒 보관함: 비어 있음</span>
+ </div>
+
+ <div id="progress">성리 팬 퀴즈: 0 / 10</div>
+</main>
+
+<footer>돋보기를 터치해 팬 퀴즈에 도전하세요</footer>
+
+<!-- 시작 화면 -->
+<div id="intro" class="overlay">
+ <div class="panel">
+  <h1>🎤 사라진 무대의 열쇠</h1>
+  <p>공연 시작까지 얼마 남지 않았습니다!</p>
+  <p>
+   그런데 성리의 대기실에서
+   황금 출입카드가 사라지고
+   STAGE 문까지 잠겼습니다.
+  </p>
+  <p>
+   <b>
+    대기실 다섯 장소에 숨겨진
+    성리 팬 퀴즈 10문제를 풀고,
+    암호를 모아 무대 문을 열어주세요!
+   </b>
+  </p>
+  <p class="small">
+   시작 버튼을 누르면 배경음악이 재생됩니다.
+  </p>
+  <button class="action"
+   onclick="startGame()">게임 시작 ▶</button>
+ </div>
+</div>
+
+<!-- 문제 화면 -->
+<div id="modal" class="overlay hidden">
+ <div class="panel">
+  <button class="close"
+   onclick="closeModal()"
+   aria-label="닫기">×</button>
+  <h2 id="modalTitle"></h2>
+  <p id="modalText"></p>
+  <div id="modalContent"></div>
+  <p id="feedback"></p>
+ </div>
+</div>
+
+<!-- 탈출 성공 화면 -->
+<div id="endingScreen" class="overlay hidden">
+ <div class="endingWrap">
+  <img id="endingImage" src="ending.png"
+   alt="성리의 공연 무대 탈출 성공"
+   onerror="document.getElementById('endingFallback').style.display='block';this.style.display='none'">
+  <div id="endingFallback">
+   <h1>🌟 탈출 성공!</h1>
+   <p>성리의 무대가 열렸습니다!</p>
+   <p>🎤 당신이 있어 내가 빛나요!</p>
+  </div>
+  <button class="action" id="endingReplay"
+   onclick="restartGame()">
+   🔄 처음부터 다시 플레이
+  </button>
+ </div>
+</div>
+
+<!-- 배경음악 -->
+<audio id="bgm" src="music.mp3"
+ loop preload="auto"></audio>
+
+<script>
+"use strict";
+
+/*
+ 성리 팬 퀴즈 10문제
+ 각 장소마다 2문제씩 구성
+*/
+const puzzles={
+ letter:{
+  title:"💌 화장대의 비밀 편지",
+  item:"💌 첫 번째 암호 3",
+  questions:[
+   {
+    text:"성리의 생일은 언제일까요?",
+    options:[
+     "① 4월 6일",
+     "② 5월 6일",
+     "③ 4월 16일",
+     "④ 6월 4일"
+    ],
+    answer:0
+   },
+   {
+    text:"성리의 고향은 어디일까요?",
+    options:[
+     "① 대구",
+     "② 경북 안동",
+     "③ 부산",
+     "④ 서울"
+    ],
+    answer:1
+   }
+  ]
+ },
+ clock:{
+  title:"🕰️ 시간 속의 성리",
+  item:"🕰️ 두 번째 암호 6",
+  questions:[
+   {
+    text:"성리가 전공한 분야는 무엇일까요?",
+    options:[
+     "① 연극영화",
+     "② 실용무용",
+     "③ K-POP",
+     "④ 클래식"
+    ],
+    answer:2
+   },
+   {
+    text:"성리의 알려진 좌우명은 무엇일까요?",
+    options:[
+     "① 오늘보다 내일",
+     "② 후회 없이 즐기며 살자",
+     "③ 끝까지 포기하지 말자",
+     "④ 음악이 전부다"
+    ],
+    answer:1
+   }
+  ]
+ },
+ score:{
+  title:"🎼 비밀 악보의 노래",
+  item:"🎼 세 번째 암호 0",
+  questions:[
+   {
+    text:"성리가 레인즈에서 맡았던 보컬 포지션은?",
+    options:[
+     "① 래퍼",
+     "② 서브보컬",
+     "③ 리드보컬",
+     "④ 메인보컬"
+    ],
+    answer:3
+   },
+   {
+    text:"레인즈의 데뷔 앨범 제목은 무엇일까요?",
+    options:[
+     "① SUNSHINE",
+     "② RAINBOW",
+     "③ FLOWER",
+     "④ STARLIGHT"
+    ],
+    answer:0
+   }
+  ]
+ },
+ costume:{
+  title:"✨ 무대 의상의 기억",
+  item:"✨ 네 번째 암호 2",
+  questions:[
+   {
+    text:"성리의 솔로 데뷔 연도는 언제일까요?",
+    options:[
+     "① 2017년",
+     "② 2018년",
+     "③ 2019년",
+     "④ 2020년"
+    ],
+    answer:2
+   },
+   {
+    text:"성리의 알려진 별명 중 하나는?",
+    options:[
+     "① 감성리",
+     "② 반짝리",
+     "③ 웃음리",
+     "④ 행복리"
+    ],
+    answer:0
+   }
+  ]
+ },
+ case:{
+  title:"🎤 황금 마이크 보관함",
+  item:"🪪 황금 출입카드",
+  questions:[
+   {
+    text:"미스터트롯2 본선 2차전에서 성리의 대결 상대는 누구였을까요?",
+    options:[
+     "① 박지현",
+     "② 강대웅",
+     "③ 진해성",
+     "④ 안성훈"
+    ],
+    answer:1
+   },
+   {
+    text:"그 대결에서 성리가 받은 마스터 표는 몇 표였을까요?",
+    options:[
+     "① 7표",
+     "② 8표",
+     "③ 9표",
+     "④ 10표"
+    ],
+    answer:2
+   }
+  ]
+ }
+};
+
+const solved=new Set();
+const progress={};
+const $=id=>document.getElementById(id);
+const bgm=$("bgm");
+const totalQuestions=10;
+
+Object.keys(puzzles).forEach(id=>{
+ progress[id]=0;
+});
+
+function startGame(){
+ $("intro").classList.add("hidden");
+ bgm.volume=0.3;
+ bgm.play().then(updateMusic).catch(updateMusic);
+}
+
+function updateMusic(){
+ $("musicBtn").textContent=
+  bgm.paused?"♫ 음악 OFF":"♫ 음악 ON";
+}
+
+function toggleMusic(){
+ if(bgm.paused){
+  bgm.play().then(updateMusic).catch(updateMusic);
+ }else{
+  bgm.pause();
+  updateMusic();
+ }
+}
+
+function openPuzzle(id){
+ $("modal").classList.remove("hidden");
+ $("feedback").textContent="";
+
+ if(id==="door"){
+  showDoor();
+  return;
+ }
+
+ showQuestion(id);
+}
+
+function showQuestion(id){
+ const p=puzzles[id];
+ const content=$("modalContent");
+ content.replaceChildren();
+
+ $("modalTitle").textContent=p.title;
+
+ if(solved.has(id)){
+  $("modalText").textContent=
+   "이 장소의 미션을 모두 완료했습니다!";
+  content.textContent=
+   "✅ 획득 아이템: "+p.item;
+  return;
+ }
+
+ const index=progress[id];
+ const q=p.questions[index];
+
+ $("modalText").textContent=
+  "문제 "+(index+1)+" / 2\n"+q.text;
+
+ q.options.forEach((option,answerIndex)=>{
+  const button=document.createElement("button");
+  button.className="option";
+  button.textContent=option;
+  button.onclick=()=>checkAnswer(id,answerIndex);
+  content.appendChild(button);
+ });
+}
+
+function checkAnswer(id,answerIndex){
+ const p=puzzles[id];
+ const index=progress[id];
+ const q=p.questions[index];
+
+ if(answerIndex!==q.answer){
+  $("feedback").textContent=
+   "❌ 아쉽습니다! 다시 도전해 보세요.";
+  return;
+ }
+
+ progress[id]++;
+ $("feedback").textContent="🎉 정답입니다!";
+
+ if(progress[id]<2){
+  const content=$("modalContent");
+  content.replaceChildren();
+
+  const button=document.createElement("button");
+  button.className="action";
+  button.textContent="다음 문제 ▶";
+  button.onclick=()=>{
+   $("feedback").textContent="";
+   showQuestion(id);
+  };
+  content.appendChild(button);
+
+ }else{
+  solved.add(id);
+
+  const hotspot=document.querySelector(
+   '[data-puzzle="'+id+'"]'
+  );
+
+  if(hotspot){
+   hotspot.classList.add("done");
+   hotspot.textContent="✓";
+  }
+
+  const content=$("modalContent");
+  content.replaceChildren();
+
+  const message=document.createElement("p");
+  message.textContent=
+   "🎁 미션 완료! "+p.item+" 획득!";
+  content.appendChild(message);
+
+  const button=document.createElement("button");
+  button.className="action";
+  button.textContent="대기실로 돌아가기";
+  button.onclick=closeModal;
+  content.appendChild(button);
+
+  $("feedback").textContent=
+   "✨ 두 문제 모두 정답!";
+ }
+
+ renderBag();
+}
+
+function renderBag(){
+ const bag=$("bag");
+ bag.replaceChildren();
+
+ Object.keys(puzzles).forEach(id=>{
+  if(solved.has(id)){
+   const item=document.createElement("span");
+   item.className="item";
+   item.textContent=puzzles[id].item;
+   bag.appendChild(item);
+  }
+ });
+
+ if(solved.size===0){
+  const empty=document.createElement("span");
+  empty.className="item";
+  empty.textContent="🎒 보관함: 비어 있음";
+  bag.appendChild(empty);
+ }
+
+ const answered=Object.values(progress)
+  .reduce((sum,count)=>sum+count,0);
+
+ $("progress").textContent=
+  "성리 팬 퀴즈: "+answered+" / "+totalQuestions;
+
+ $("status").textContent=
+  answered===totalQuestions
+  ? "🌟 모든 문제 해결! STAGE 문을 열어보세요!"
+  : "성리 팬 퀴즈를 풀고 암호 단서를 모으세요!";
+}
+
+function showDoor(){
+ $("modalTitle").textContent=
+  "🚪 STAGE 최종 출입문";
+
+ $("modalText").textContent=
+  "성리의 무대로 가는 마지막 관문입니다.";
+
+ const content=$("modalContent");
+ content.replaceChildren();
+
+ const answered=Object.values(progress)
+  .reduce((sum,count)=>sum+count,0);
+
+ if(answered<totalQuestions){
+  const message=document.createElement("p");
+  message.textContent=
+   "🔒 아직 팬 퀴즈가 "+
+   (totalQuestions-answered)+
+   "문제 남았습니다. 모두 풀어주세요!";
+  content.appendChild(message);
+  return;
+ }
+
+ const hint=document.createElement("p");
+ hint.textContent=
+  "암호 순서: 편지 → 시계 → 악보 → 의상. "+
+  "획득한 네 자리 숫자를 순서대로 입력하세요.";
+ content.appendChild(hint);
+
+ const input=document.createElement("input");
+ input.id="code";
+ input.type="text";
+ input.inputMode="numeric";
+ input.maxLength=4;
+ input.placeholder="????";
+ input.autocomplete="off";
+ content.appendChild(input);
+
+ const button=document.createElement("button");
+ button.className="action";
+ button.textContent="🔓 무대 문 열기";
+
+ button.onclick=()=>{
+  if(input.value.trim()==="3602"){
+   winGame();
+  }else{
+   $("feedback").textContent=
+    "🔒 암호가 틀렸습니다. "+
+    "단서를 다시 확인하세요.";
+  }
+ };
+
+ content.appendChild(button);
+}
+
+function winGame(){
+ $("modal").classList.add("hidden");
+
+ $("status").textContent=
+  "🏆 성리 팬 퀴즈 10문제 성공! 무대 탈출 완료!";
+
+ const screen=$("endingScreen");
+ screen.classList.remove("hidden");
+
+ if(bgm.paused){
+  bgm.play().then(updateMusic).catch(updateMusic);
+ }
+
+ const image=$("endingImage");
+ if(image && image.animate){
+  image.animate(
+   [
+    {opacity:0,transform:"scale(0.94)"},
+    {opacity:1,transform:"scale(1)"}
+   ],
+   {
+    duration:850,
+    easing:"ease-out",
+    fill:"forwards"
+   }
+  );
+ }
+}
+
+function restartGame(){
+ bgm.pause();
+ bgm.currentTime=0;
+ location.reload();
+}
+
+function closeModal(){
+ $("modal").classList.add("hidden");
+}
+
+bgm.addEventListener("play",updateMusic);
+bgm.addEventListener("pause",updateMusic);
+</script>
+</body>
+</html>
